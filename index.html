@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIR Poker - Login</title>
+    <link rel="stylesheet" href="app_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .activity-section-wins, .activity-section-losses { display: none; }
+    </style>
+    <!-- EmailJS integration -->
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script>
+      (function(){
+        emailjs.init('3ai9NJfAqzZyA7u1d'); // <-- Replace YOUR_USER_ID with your EmailJS public key
+      })();
+    </script>
+</head>
+<body>
+    <button id="contact-us-btn" class="contact-us-floating-btn">✉️ Contact Us</button>
+    <div class="container">
+        <h1 class="main-title">AIR Poker</h1>
+
+        <!-- Login Form -->
+        <div class="form-container" id="login-form">
+            <h2>Welcome Back</h2>
+            <div class="form-group">
+                <input type="email" id="login-email" placeholder="Enter your email address" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="login-password" placeholder="Enter your password" required>
+            </div>
+            <div class="form-group">
+                <button id="login-button" class="primary-btn">Sign In</button>
+            </div>
+            <div class="form-link">
+                <p>New to AIR Poker? <a href="#" id="show-register">Create Account</a></p>
+            </div>
+            <div class="error-message" id="login-error"></div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="form-container hidden" id="register-form">
+            <h2>Join the Game</h2>
+            <div class="form-group">
+                <input type="text" id="register-username" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <input type="email" id="register-email" placeholder="Enter your email address" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="register-password" placeholder="Create a password" required>
+            </div>
+            <div class="form-group">
+                <input type="password" id="register-confirm-password" placeholder="Confirm your password" required>
+            </div>
+            <div class="form-group">
+                <button id="register-button" class="primary-btn">Create Account</button>
+            </div>
+            <div class="form-link">
+                <p>Already have an account? <a href="#" id="show-login">Sign In</a></p>
+            </div>
+            <div class="error-message" id="register-error"></div>
+        </div>
+
+        <!-- Game Interface (Hidden until login) -->
+        <div class="game-container hidden" id="game-interface">
+            <div class="profile-section">
+                <div class="game-header">
+                    <h2>Texas Hold'em Poker</h2>
+                    <div class="user-status">
+                        <span class="username" id="user-display-name">Player</span>
+                        <div class="stat-box" id="chip-count-box">
+                            <h3 id="user-chips">0</h3>
+                            <p>💰 Chips</p>
+                            <span class="stat-desc">Total you own</span>
+                        </div>
+                        <button id="logout-button" class="secondary-btn">Sign Out</button>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:center;gap:16px;margin: 18px 0 0 0;">
+                    <a href="poker_index.html" id="start-game-btn" class="menu-btn">🎲 Start New Game</a>
+                    <a href="journal.html" id="journal-btn" class="menu-btn">📝 Journal</a>
+                </div>
+            </div>
+            <div class="section-spacer"></div>
+            <div class="recent-activity">
+                <h3>Recent Activity <span class="activity-heading-icon" aria-hidden="true">🔍</span></h3>
+                
+                <!-- Activity Search -->
+                <div class="activity-search">
+                    <input type="text" id="activity-search-input" placeholder="Search activities..." aria-label="Search activities">
+                </div>
+                
+                <!-- Quick Action Buttons -->
+                <div class="activity-quick-actions grouped-actions">
+                    <button class="quick-action-btn" id="refresh-activities" title="Refresh activities">
+                        <span class="action-icon">🔄</span>
+                        Refresh
+                    </button>
+                    <button class="quick-action-btn" id="activity-stats" title="View detailed statistics">
+                        <span class="action-icon">📈</span>
+                        Stats
+                    </button>
+                    <button class="quick-action-btn" id="activity-settings" title="Activity settings">
+                        <span class="action-icon">⚙️</span>
+                        Settings
+                    </button>
+                    <button class="quick-action-btn" id="clear-activities" title="Clear all activities">
+                        <span class="action-icon">🗑️</span>
+                        Clear
+                    </button>
+                    <!-- View Achievements Button (moved here) -->
+                    <button class="quick-action-btn" id="view-achievements-btn" title="View Achievements">
+                        <span class="action-icon">🏅</span>
+                        Achievements
+                    </button>
+                </div>
+                
+                <div class="activity-controls">
+                    <button class="activity-filter active" data-filter="all">All</button>
+                    <button class="activity-filter" data-filter="win">Wins</button>
+                    <button class="activity-filter" data-filter="loss">Losses</button>
+                    <button class="activity-filter" data-filter="account">Account</button>
+                    <button id="export-activity" title="Export activity log">⬇️</button>
+                </div>
+                
+                <!-- Enhanced Empty State -->
+                <div id="activity-empty-state" class="activity-empty-state hidden">
+                    <div class="empty-icon">📭</div>
+                    <div class="empty-text">No activities yet</div>
+                    <div class="empty-subtext">Start playing to see your activity history</div>
+                </div>
+                
+                <ul id="activity-list" class="alt-bg-list">
+                    <li data-type="account" data-category="account">
+                        <span class="activity-icon">🆕</span>
+                        <span class="activity-content">
+                            <span class="activity-description">Account created successfully</span>
+                            <span class="activity-category account">Account</span>
+                        </span>
+                        <div class="activity-performance">
+                            <div class="performance-indicator good"></div>
+                        </div>
+                        <span class="activity-time">Just now</span>
+                    </li>
+                    <li data-type="account" data-category="account">
+                        <span class="activity-icon">👋</span>
+                        <span class="activity-content">
+                            <span class="activity-description">Welcome to AIR Poker!</span>
+                            <span class="activity-category account">Account</span>
+                        </span>
+                        <div class="activity-performance">
+                            <div class="performance-indicator good"></div>
+                        </div>
+                        <span class="activity-time">Just now</span>
+                    </li>
+                    <li data-type="account" data-category="account">
+                        <span class="activity-icon">🪙</span>
+                        <span class="activity-content">
+                            <span class="activity-description">Starting chips: 1000</span>
+                            <span class="activity-category account">Account</span>
+                        </span>
+                        <div class="activity-performance">
+                            <div class="performance-indicator good"></div>
+                        </div>
+                        <span class="activity-time">Just now</span>
+                    </li>
+                </ul>
+                <div class="activity-section-wins">
+                    <h4>Wins</h4>
+                    <ul id="activity-list-wins"></ul>
+                </div>
+                <div class="activity-section-losses">
+                    <h4>Losses</h4>
+                    <ul id="activity-list-losses"></ul>
+                </div>
+            </div>
+            <!-- Activity Detail Modal -->
+            <div id="activity-modal" class="modal hidden">
+                <div class="modal-content">
+                    <span class="close-modal" id="close-modal">&times;</span>
+                    <h4 id="modal-activity-title"></h4>
+                    <div id="modal-activity-details"></div>
+                    <div id="activity-note" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Screen (hidden by default) -->
+        <div id="achievements-screen" class="hidden">
+            <button id="close-achievements-screen" class="quick-action-btn top-left-btn" type="button" title="Return to Main Menu">← Return to Main Menu</button>
+            <div class="achievements-section">
+                <h3 style="margin-top: 0;">Achievements</h3>
+                <!-- BETTING ACHIEVEMENTS -->
+                <div class="achievement-tier">
+                    <h4 class="tier-header betting-header">💰 BETTING MASTERY</h4>
+                    <div class="achievements-grid" id="betting-achievements">
+                        <div class="achievement-badge bronze" data-achievement="small-bet">
+                            <span class="achievement-icon">💎</span>
+                            <span class="achievement-name">Small Bet</span>
+                            <span class="achievement-desc">Bet 25+ chips in one hand</span>
+                            <span class="achievement-rank">Betting Rank 1/5</span>
+                            <span class="achievement-stars">⭐</span>
+                        </div>
+                        <div class="achievement-badge silver" data-achievement="medium-bet">
+                            <span class="achievement-icon">💎💎</span>
+                            <span class="achievement-name">Medium Bet</span>
+                            <span class="achievement-desc">Bet 300+ chips in one hand</span>
+                            <span class="achievement-rank">Betting Rank 2/5</span>
+                            <span class="achievement-stars">⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge gold" data-achievement="high-roller">
+                            <span class="achievement-icon">💰</span>
+                            <span class="achievement-name">High Roller</span>
+                            <span class="achievement-desc">Bet 800+ chips in one hand</span>
+                            <span class="achievement-rank">Betting Rank 3/5</span>
+                            <span class="achievement-stars">⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge platinum" data-achievement="millionaire">
+                            <span class="achievement-icon">💎💎💎</span>
+                            <span class="achievement-name">Millionaire</span>
+                            <span class="achievement-desc">Bet 2000+ chips in one hand</span>
+                            <span class="achievement-rank">Betting Rank 4/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge diamond" data-achievement="whale">
+                            <span class="achievement-icon">🐋</span>
+                            <span class="achievement-name">Whale</span>
+                            <span class="achievement-desc">Bet 5000+ chips in one hand</span>
+                            <span class="achievement-rank">Betting Rank 5/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- WINNING ACHIEVEMENTS -->
+                <div class="achievement-tier">
+                    <h4 class="tier-header winning-header">🏆 WINNING STREAKS</h4>
+                    <div class="achievements-grid" id="winning-achievements">
+                        <div class="achievement-badge bronze" data-achievement="first-win">
+                            <span class="achievement-icon">🥇</span>
+                            <span class="achievement-name">First Win</span>
+                            <span class="achievement-desc">Win your first hand</span>
+                            <span class="achievement-rank">Winning Rank 1/5</span>
+                            <span class="achievement-stars">⭐</span>
+                        </div>
+                        <div class="achievement-badge silver" data-achievement="winning-streak">
+                            <span class="achievement-icon">🔥</span>
+                            <span class="achievement-name">Hot Streak</span>
+                            <span class="achievement-desc">Win 4 hands in a row</span>
+                            <span class="achievement-rank">Winning Rank 2/5</span>
+                            <span class="achievement-stars">⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge gold" data-achievement="winning-master">
+                            <span class="achievement-icon">🏆</span>
+                            <span class="achievement-name">Winning Master</span>
+                            <span class="achievement-desc">Win 25+ hands</span>
+                            <span class="achievement-rank">Winning Rank 3/5</span>
+                            <span class="achievement-stars">⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge platinum" data-achievement="legend">
+                            <span class="achievement-icon">🌟</span>
+                            <span class="achievement-name">Legend</span>
+                            <span class="achievement-desc">Win 75+ hands</span>
+                            <span class="achievement-rank">Winning Rank 4/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge diamond" data-achievement="ultimate-streak">
+                            <span class="achievement-icon">🔥🔥</span>
+                            <span class="achievement-name">Ultimate Streak</span>
+                            <span class="achievement-desc">Win 8 hands in a row</span>
+                            <span class="achievement-rank">Winning Rank 5/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- EXPERIENCE ACHIEVEMENTS -->
+                <div class="achievement-tier">
+                    <h4 class="tier-header experience-header">📚 EXPERIENCE & SKILL</h4>
+                    <div class="achievements-grid" id="experience-achievements">
+                        <div class="achievement-badge bronze" data-achievement="first-game">
+                            <span class="achievement-icon">🎮</span>
+                            <span class="achievement-name">First Game</span>
+                            <span class="achievement-desc">Play your first hand</span>
+                            <span class="achievement-rank">Experience Rank 1/5</span>
+                            <span class="achievement-stars">⭐</span>
+                        </div>
+                        <div class="achievement-badge silver" data-achievement="experienced">
+                            <span class="achievement-icon">📚</span>
+                            <span class="achievement-name">Experienced</span>
+                            <span class="achievement-desc">Play 50+ hands</span>
+                            <span class="achievement-rank">Experience Rank 2/5</span>
+                            <span class="achievement-stars">⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge gold" data-achievement="veteran">
+                            <span class="achievement-icon">🎖️</span>
+                            <span class="achievement-name">Veteran</span>
+                            <span class="achievement-desc">Play 150+ hands</span>
+                            <span class="achievement-rank">Experience Rank 3/5</span>
+                            <span class="achievement-stars">⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge platinum" data-achievement="champion">
+                            <span class="achievement-icon">👑</span>
+                            <span class="achievement-name">Champion</span>
+                            <span class="achievement-desc">75%+ win rate (50+ hands)</span>
+                            <span class="achievement-rank">Experience Rank 4/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge diamond" data-achievement="marathoner">
+                            <span class="achievement-icon">🏅</span>
+                            <span class="achievement-name">Marathoner</span>
+                            <span class="achievement-desc">Play 500+ hands</span>
+                            <span class="achievement-rank">Experience Rank 5/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- SPECIAL ACHIEVEMENTS -->
+                <div class="achievement-tier">
+                    <h4 class="tier-header special-header">✨ SPECIAL FEATS</h4>
+                    <div class="achievements-grid" id="special-achievements">
+                        <div class="achievement-badge bronze" data-achievement="river-king">
+                            <span class="achievement-icon">🌊</span>
+                            <span class="achievement-name">River King</span>
+                            <span class="achievement-desc">Win a hand with a river card</span>
+                            <span class="achievement-rank">Special Rank 1/5</span>
+                            <span class="achievement-stars">⭐</span>
+                        </div>
+                        <div class="achievement-badge silver" data-achievement="fold-master">
+                            <span class="achievement-icon">🎯</span>
+                            <span class="achievement-name">Fold Master</span>
+                            <span class="achievement-desc">Fold 10 hands in a row</span>
+                            <span class="achievement-rank">Special Rank 2/5</span>
+                            <span class="achievement-stars">⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge gold" data-achievement="collector">
+                            <span class="achievement-icon">📦</span>
+                            <span class="achievement-name">Collector</span>
+                            <span class="achievement-desc">Unlock 10 achievements</span>
+                            <span class="achievement-rank">Special Rank 3/5</span>
+                            <span class="achievement-stars">⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge platinum" data-achievement="all-rounder">
+                            <span class="achievement-icon">🃏</span>
+                            <span class="achievement-name">All-Rounder</span>
+                            <span class="achievement-desc">Win with every hand type</span>
+                            <span class="achievement-rank">Special Rank 4/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge diamond" data-achievement="perfectionist">
+                            <span class="achievement-icon">💎</span>
+                            <span class="achievement-name">Perfectionist</span>
+                            <span class="achievement-desc">Unlock all other achievements</span>
+                            <span class="achievement-rank">Special Rank 5/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- RECOVERY PATH ACHIEVEMENTS -->
+                <div class="achievement-tier">
+                    <h4 class="tier-header recovery-header">💚 RECOVERY PATH</h4>
+                    <div class="achievements-grid" id="recovery-achievements">
+                        <div class="achievement-badge bronze" data-achievement="first-journal">
+                            <span class="achievement-icon">📝</span>
+                            <span class="achievement-name">First Journal Entry</span>
+                            <span class="achievement-desc">Make your first journal entry</span>
+                            <span class="achievement-rank">Recovery Rank 1/5</span>
+                            <span class="achievement-stars">⭐</span>
+                        </div>
+                        <div class="achievement-badge silver" data-achievement="fold-discipline">
+                            <span class="achievement-icon">🧘</span>
+                            <span class="achievement-name">Discipline Master</span>
+                            <span class="achievement-desc">Fold 3 big hands in a row</span>
+                            <span class="achievement-rank">Recovery Rank 2/5</span>
+                            <span class="achievement-stars">⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge gold" data-achievement="week-without-allin">
+                            <span class="achievement-icon">📅</span>
+                            <span class="achievement-name">Steady Progress</span>
+                            <span class="achievement-desc">Play 7 days without all-in</span>
+                            <span class="achievement-rank">Recovery Rank 3/5</span>
+                            <span class="achievement-stars">⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge platinum" data-achievement="mindful-player">
+                            <span class="achievement-icon">🧠</span>
+                            <span class="achievement-name">Mindful Master</span>
+                            <span class="achievement-desc">Take 10 breaks during gameplay</span>
+                            <span class="achievement-rank">Recovery Rank 4/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐</span>
+                        </div>
+                        <div class="achievement-badge diamond" data-achievement="recovery-champion">
+                            <span class="achievement-icon">💚</span>
+                            <span class="achievement-name">Recovery Champion</span>
+                            <span class="achievement-desc">Complete the Recovery Path</span>
+                            <span class="achievement-rank">Recovery Rank 5/5</span>
+                            <span class="achievement-stars">⭐⭐⭐⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Us Screen (hidden by default) -->
+        <div id="contact-us-screen" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10,20,40,0.98); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+            <div style="background: #181e2a; border-radius: 18px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); padding: 40px 32px; max-width: 400px; width: 100%; text-align: center; position: relative;">
+                <button id="close-contact-us" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #ffd700; font-size: 1.5em; cursor: pointer;">&times;</button>
+                <h2 style="color: #ffd700; margin-bottom: 18px;">Contact Us</h2>
+                <p style="margin-bottom: 18px; color: #e8e8e8;">Have a question, feedback, or need help? Reach out to the AIR Poker team!</p>
+                <form id="contact-form">
+                    <input type="text" id="contact-name" placeholder="Your Name" required style="width: 100%; margin-bottom: 12px; padding: 10px; border-radius: 8px; border: 1px solid #ffd700; background: #222; color: #fff;">
+                    <input type="email" id="contact-email" placeholder="Your Email" required style="width: 100%; margin-bottom: 12px; padding: 10px; border-radius: 8px; border: 1px solid #ffd700; background: #222; color: #fff;">
+                    <textarea id="contact-message" placeholder="Your Message" required style="width: 100%; margin-bottom: 16px; padding: 10px; border-radius: 8px; border: 1px solid #ffd700; background: #222; color: #fff; min-height: 80px;"></textarea>
+                    <button type="submit" class="primary-btn" style="width: 100%;">Send Message</button>
+                </form>
+                <div id="contact-success" style="display:none; color: #60fa8a; margin-top: 16px;">Thank you! Your message has been sent.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOCKOUT OVERLAY FOR SESSION END -->
+    <div id="lockout-overlay" class="hidden" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);z-index:2000;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="background:#222;padding:32px 24px;border-radius:16px;min-width:320px;max-width:90vw;margin:auto;box-shadow:0 4px 24px rgba(0,0,0,0.4);text-align:center;">
+        <h2 style="color:#ffd700;">Session Ended</h2>
+        <p style="color:#fff;font-size:1.1em;margin-bottom:18px;">You have reached your session loss or time limit.<br>Come back in an hour to continue playing.</p>
+        <button id="return-main-menu-btn" class="menu-btn" style="margin-top:18px;background:linear-gradient(90deg,#ffd700 60%,#ffb300 100%);color:#222;font-weight:700;border-radius:24px;font-size:1.1em;padding:12px 32px;box-shadow:0 2px 12px rgba(255,215,0,0.15);border:none;outline:none;">Return to Main Menu</button>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    
+    <!-- Your app script -->
+    <script src="app_script.js"></script>
+    <script src="poker_script.js"></script>
+</body>
+<script>
+    // Activity filter logic
+    const allList = document.getElementById('activity-list');
+    const winsSection = document.querySelector('.activity-section-wins');
+    const lossesSection = document.querySelector('.activity-section-losses');
+    const filterButtons = document.querySelectorAll('.activity-filter');
+
+    function showActivitySection(type) {
+        if (type === 'all') {
+            allList.style.display = '';
+            winsSection.style.display = 'none';
+            lossesSection.style.display = 'none';
+        } else if (type === 'win') {
+            allList.style.display = 'none';
+            winsSection.style.display = '';
+            lossesSection.style.display = 'none';
+        } else if (type === 'loss') {
+            allList.style.display = 'none';
+            winsSection.style.display = 'none';
+            lossesSection.style.display = '';
+        } else if (type === 'account') {
+            // Show all activities but filter to account type in the JavaScript
+            allList.style.display = '';
+            winsSection.style.display = 'none';
+            lossesSection.style.display = 'none';
+            // The actual filtering will be handled by the renderActivities function in app_script.js
+        }
+    }
+
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            showActivitySection(btn.getAttribute('data-filter'));
+        });
+    });
+    // Show all by default
+    showActivitySection('all');
+
+    // Ensure recent activities are rendered when the game interface is shown
+    function showGameInterface() {
+        document.getElementById('game-interface').classList.remove('hidden');
+    }
+    // Example: Call showGameInterface() after successful login or when switching to profile
+    // showGameInterface();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show all by default
+        showActivitySection('all');
+    });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var closeModalBtn = document.getElementById('close-modal');
+    var activityModal = document.getElementById('activity-modal');
+    if (closeModalBtn && activityModal) {
+      closeModalBtn.addEventListener('click', function() {
+        activityModal.classList.add('hidden');
+      });
+    }
+  });
+</script>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Journal & Mood Log</title>
+    <link rel="stylesheet" href="app_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="background: #181a2b; min-height: 100vh; margin: 0; position: relative;">
+    <!-- Return to Main Menu button positioned in top left -->
+    <a href="app_index.html" class="menu-btn" style="position: fixed; top: 20px; left: 20px; z-index: 1000; font-size: 1em; padding: 10px 32px; border-radius: 24px; font-weight: 700; background: linear-gradient(90deg,#ffd700 60%,#ffb300 100%); color: #1a1a2e; box-shadow: 0 2px 8px #ffd70022; border: none; outline: none; display: inline-block; transition: background 0.2s,box-shadow 0.2s,color 0.2s; text-decoration: none;">← Return to Main Menu</a>
+    
+    <div class="container" style="max-width: 480px; margin: 48px auto 0 auto;">
+        <h1 class="main-title" style="text-align:center;font-size:2em;line-height:1.1;margin-bottom:18px;">Daily Journal & Mood Log</h1>
+        <div id="journal-entry" style="background:rgba(0,0,0,0.7);border-radius:16px;padding:28px 22px 22px 22px;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 0 1px rgba(255,215,0,0.1),inset 0 1px 0 rgba(255,255,255,0.1);margin-bottom:32px;">
+            <h2 style="color:#ffd700;text-align:center;margin-top:0;">New Journal Entry</h2>
+            <form id="journal-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="journal-date" style="color:#fffbe6;">Date</label>
+                    <input type="date" id="journal-date" required style="width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid #ffd700;background:#23243a;color:#ffd700;">
+                </div>
+                <div class="form-group">
+                    <label for="journal-mood" style="color:#fffbe6;">Mood</label>
+                    <select id="journal-mood" required style="width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid #ffd700;background:#23243a;color:#ffd700;">
+                        <option value="">Select mood</option>
+                        <option value="😀">😀 Happy</option>
+                        <option value="😐">😐 Neutral</option>
+                        <option value="😔">😔 Sad</option>
+                        <option value="😠">😠 Angry</option>
+                        <option value="😰">😰 Anxious</option>
+                        <option value="😇">😇 Grateful</option>
+                        <option value="💪">💪 Motivated</option>
+                        <option value="😴">😴 Tired</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="journal-text" style="color:#fffbe6;">Entry</label>
+                    <textarea id="journal-text" rows="4" required style="width:100%;padding:10px;border-radius:8px;border:1px solid #ffd700;background:#23243a;color:#ffd700;margin-bottom:12px;"></textarea>
+                </div>
+                <button type="submit" id="save-journal-btn" class="menu-btn" style="font-size:1.1em;padding:12px 36px;border-radius:24px;font-weight:700;background:linear-gradient(90deg,#ffd700 60%,#ffb300 100%);color:#1a1a2e;box-shadow:0 2px 8px #ffd70022;margin-bottom:8px;border:none;outline:none;display:inline-block;transition:background 0.2s,box-shadow 0.2s,color 0.2s;text-decoration:none;">Save Entry</button>
+            </form>
+        </div>
+        <div id="journal-log" style="background:rgba(0,0,0,0.7);border-radius:16px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 0 1px rgba(255,215,0,0.1),inset 0 1px 0 rgba(255,255,255,0.1);">
+            <h2 style="color:#ffd700;text-align:center;margin-top:0;">Previous Entries</h2>
+            <ul id="journal-entries-list" style="list-style:none;padding:0;margin:0;"></ul>
+            <div style="text-align:center;margin-top:18px;">
+                <button id="clear-journal-btn" class="menu-btn" style="font-size:1em;padding:10px 32px;border-radius:24px;font-weight:700;background:linear-gradient(90deg,#ffd700 60%,#ffb300 100%);color:#1a1a2e;box-shadow:0 2px 8px #ffd70022;margin-bottom:8px;border:none;outline:none;display:inline-block;transition:background 0.2s,box-shadow 0.2s,color 0.2s;text-decoration:none;">Clear Entries</button>
+            </div>
+        </div>
+    </div>
+    <!-- Load app_script.js for auth and getCurrentUserId support -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="app_script.js"></script>
+    <script>
+    // Set today's date as default
+    document.getElementById('journal-date').value = new Date().toISOString().split('T')[0];
+
+    // Helper to get user ID (from app_script.js if available)
+    function getJournalUserId() {
+        if (typeof getCurrentUserId === 'function') {
+            const id = getCurrentUserId();
+            if (id) return id;
+        }
+        if (window.auth && window.auth.currentUser && window.auth.currentUser.uid) return window.auth.currentUser.uid;
+        return 'guest';
+    }
+
+    function getJournalKey() {
+        return 'journalEntries_' + getJournalUserId();
+    }
+    
+    // Show achievement notification
+    function showAchievementNotification(message) {
+        // Create notification element with the same styling as main app
+        const notification = document.createElement('div');
+        notification.className = 'achievement-notification';
+        notification.innerHTML = `
+            <div class="achievement-notification-content">
+                <div class="achievement-notification-icon">🏆</div>
+                <div class="achievement-notification-text">
+                    <div class="achievement-notification-title">Achievement Unlocked!</div>
+                    <div class="achievement-notification-name">First Journal Entry</div>
+                    <div class="achievement-notification-desc">${message}</div>
+                </div>
+            </div>
+        `;
+        
+        // Add the CSS styles inline to match the main app
+        const style = document.createElement('style');
+        style.textContent = `
+            .achievement-notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+                border: 2px solid #ffb300;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 
+                    0 8px 32px rgba(255, 215, 0, 0.4),
+                    0 4px 16px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                transform: translateX(400px);
+                transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                max-width: 320px;
+                min-width: 280px;
+            }
+            
+            .achievement-notification.show {
+                transform: translateX(0);
+            }
+            
+            .achievement-notification-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .achievement-notification-icon {
+                font-size: 2rem;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+                animation: achievementGlow 2s ease-in-out infinite alternate;
+            }
+            
+            @keyframes achievementGlow {
+                from {
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+                }
+                to {
+                    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 16px rgba(255, 215, 0, 0.8));
+                }
+            }
+            
+            .achievement-notification-text {
+                flex: 1;
+            }
+            
+            .achievement-notification-title {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: #1a1a2e;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+            
+            .achievement-notification-name {
+                font-size: 1.1rem;
+                font-weight: 800;
+                color: #1a1a2e;
+                margin-bottom: 4px;
+                text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            }
+            
+            .achievement-notification-desc {
+                font-size: 0.85rem;
+                color: #333;
+                line-height: 1.3;
+                font-weight: 500;
+            }
+            
+            @media (max-width: 768px) {
+                .achievement-notification {
+                    right: 10px;
+                    left: 10px;
+                    max-width: none;
+                    min-width: auto;
+                }
+            }
+        `;
+        
+        // Add styles to head if not already present
+        if (!document.querySelector('#achievement-notification-styles')) {
+            style.id = 'achievement-notification-styles';
+            document.head.appendChild(style);
+        }
+        
+        // Add to page
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        
+        // Remove after 5 seconds (same as main app)
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 500);
+        }, 5000);
+        
+        console.log('[ACHIEVEMENT] Notification shown:', message);
+    }
+
+    // Load previous entries from localStorage (per user)
+    function loadJournalEntries() {
+        const entries = JSON.parse(localStorage.getItem(getJournalKey()) || '[]');
+        const list = document.getElementById('journal-entries-list');
+        list.innerHTML = '';
+        if (entries.length === 0) {
+            list.innerHTML = '<li style="color:#b0b0b0;text-align:center;">No entries yet. Start your daily journal above!</li>';
+            return;
+        }
+        entries.slice().reverse().forEach(entry => {
+            const li = document.createElement('li');
+            li.style.background = 'rgba(255,215,0,0.07)';
+            li.style.border = '1.5px solid rgba(255,215,0,0.18)';
+            li.style.borderRadius = '12px';
+            li.style.marginBottom = '12px';
+            li.style.padding = '12px 16px';
+            li.innerHTML = `<div style='font-size:1.1em;font-weight:700;color:#ffd700;'>${entry.date} ${entry.mood}</div><div style='color:#fffbe6;margin:8px 0 0 0;white-space:pre-line;'>${entry.text}</div>`;
+            list.appendChild(li);
+        });
+    }
+
+    // Save new entry (per user)
+    document.getElementById('journal-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('journal-date').value;
+        const mood = document.getElementById('journal-mood').value;
+        const text = document.getElementById('journal-text').value.trim();
+        if (!date || !mood || !text) return;
+        const key = getJournalKey();
+        const entries = JSON.parse(localStorage.getItem(key) || '[]');
+        entries.push({ date, mood, text });
+        localStorage.setItem(key, JSON.stringify(entries));
+        document.getElementById('journal-form').reset();
+        document.getElementById('journal-date').value = new Date().toISOString().split('T')[0];
+        loadJournalEntries();
+        
+        // --- Achievement tracking for first journal entry ---
+        const userId = getJournalUserId();
+        window.hasJournalEntry = true;
+        localStorage.setItem(`hasJournalEntry_${userId}`, 'true');
+        
+        // Check if this is the first journal entry and unlock achievement
+        if (entries.length === 1) {
+            console.log('[ACHIEVEMENT] First journal entry detected!');
+            
+            // Load current achievements
+            const achievementsKey = `achievements_${userId}`;
+            const savedAchievements = localStorage.getItem(achievementsKey);
+            let achievements = {};
+            
+            if (savedAchievements) {
+                try {
+                    achievements = JSON.parse(savedAchievements);
+                } catch (e) {
+                    console.warn('Failed to parse achievements:', e);
+                }
+            }
+            
+            // Initialize first-journal achievement if not exists
+            if (!achievements['first-journal']) {
+                achievements['first-journal'] = { unlocked: false, tier: 'bronze', stars: 1 };
+            }
+            
+            // Unlock the achievement if not already unlocked
+            if (!achievements['first-journal'].unlocked) {
+                achievements['first-journal'].unlocked = true;
+                localStorage.setItem(achievementsKey, JSON.stringify(achievements));
+                
+                // Show achievement notification
+                showAchievementNotification('First Journal Entry! You started your recovery journey with reflection!');
+                
+                console.log('[ACHIEVEMENT] First journal achievement unlocked!');
+            }
+        }
+        
+        // Also try to call the main app's checkAchievements function if available
+        if (typeof window.checkAchievements === 'function') {
+            window.checkAchievements();
+        }
+    });
+
+    // Clear all journal entries (per user)
+    document.getElementById('clear-journal-btn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all journal entries? This action cannot be undone.')) {
+            localStorage.removeItem(getJournalKey());
+            loadJournalEntries();
+        }
+    });
+
+    // Initial load
+    loadJournalEntries();
+
+    // If Firebase auth is available, reload entries on auth state change
+    if (window.firebase && window.firebase.auth) {
+        firebase.auth().onAuthStateChanged(function() {
+            loadJournalEntries();
+        });
+    }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIR Poker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="poker_style.css">
+</head>
+<body>
+  <div class="app-logo-container">
+    <!-- Replace 'images/logo.png' with your actual logo path -->
+    <img src="images/AIR_Poker_Logo_Clear.png" alt="AIR Poker Logo" class="app-logo">
+  </div>
+  <div id="game">
+    <button id="return-to-menu" class="menu-btn" onclick="window.location.href='app_index.html'">← Return to Main Menu</button>
+
+    <div id="players">
+      <!-- Player 1 -->
+      <div class="player" id="player-1">
+        <h3>Player 1</h3>
+        <div class="position-indicators">
+          <div class="dealer-button">D</div>
+          <div class="small-blind">SB</div>
+          <div class="big-blind">BB</div>
+          <div class="under-the-gun">UTG</div>
+        </div>
+        <div id="player-1-cards" class="player-cards"></div>
+        <div class="player-stats">
+          <div>Chips <span aria-label="chips" title="Chips">🪙</span>: $<span id="player-1-chips">100</span></div>
+          <div>Bet: $<span id="player-1-bet">0</span></div>
+        </div>
+        <div class="chip-display"></div>
+      </div>
+
+      <!-- Player 2 -->
+      <div class="player" id="player-2">
+        <h3>Player 2</h3>
+        <div class="position-indicators">
+          <div class="dealer-button">D</div>
+          <div class="small-blind">SB</div>
+          <div class="big-blind">BB</div>
+          <div class="under-the-gun">UTG</div>
+        </div>
+        <div id="player-2-cards" class="player-cards"></div>
+        <div class="player-stats">
+          <div>Chips <span aria-label="chips" title="Chips">🪙</span>: $<span id="player-2-chips">100</span></div>
+          <div>Bet: $<span id="player-2-bet">0</span></div>
+        </div>
+        <div class="chip-display"></div>
+      </div>
+
+      <!-- Player 3 -->
+      <div class="player" id="player-3">
+        <h3>Player 3</h3>
+        <div class="position-indicators">
+          <div class="dealer-button">D</div>
+          <div class="small-blind">SB</div>
+          <div class="big-blind">BB</div>
+          <div class="under-the-gun">UTG</div>
+        </div>
+        <div id="player-3-cards" class="player-cards"></div>
+        <div class="player-stats">
+          <div>Chips <span aria-label="chips" title="Chips">🪙</span>: $<span id="player-3-chips">100</span></div>
+          <div>Bet: $<span id="player-3-bet">0</span></div>
+        </div>
+        <div class="chip-display"></div>
+      </div>
+
+      <!-- Player 4 (User) -->
+      <div class="player" id="player-4">
+        <h3>You</h3>
+        <div class="position-indicators">
+          <div class="dealer-button">D</div>
+          <div class="small-blind">SB</div>
+          <div class="big-blind">BB</div>
+          <div class="under-the-gun">UTG</div>
+        </div>
+        <div id="player-4-cards" class="player-cards"></div>
+        <div class="player-stats">
+          <div>Chips <span aria-label="chips" title="Chips">🪙</span>: $<span id="player-4-chips">100</span></div>
+          <div>Bet: $<span id="player-4-bet">0</span></div>
+        </div>
+        <div class="chip-display"></div>
+      </div>
+    </div>
+
+    <!-- Community Cards -->
+    <div id="community-cards" class="card-row"></div>
+
+    <!-- Pot Display -->
+    <div id="pot-container">
+      <div id="pot-info">
+        <div id="pot-label">POT</div>
+        <div id="pot">0</div>
+      </div>
+      <div id="pot-chips"></div>
+    </div>
+
+    <!-- Player Action Information -->
+    <div id="info"></div>
+
+    <!-- Hand Strength Display -->
+    <div id="hand-strength-display" class="hand-strength-info">Hand Strength: -- | Pot Odds: -- | To Call: $--</div>
+
+    <!-- Player Controls -->
+    <div id="controls">
+      <!-- Standard Action Buttons -->
+      <div class="action-buttons">
+        <button id="check-btn">Check</button>
+        <button id="call-btn">Call</button>
+        <button id="fold-btn">Fold</button>
+      </div>
+
+      <!-- Hidden Legacy Controls -->
+      <div class="hidden-controls" style="display: none;">
+        <input type="number" id="raise-input" placeholder="Raise" min="10" step="10">
+        <button id="raise-btn">Raise</button>
+        <button id="bet-btn">Bet $10</button>
+        <button id="next-round-btn">Next Round</button>
+        <button id="new-game-btn">New Game</button>
+      </div>
+
+      <!-- Betting Slider Control -->
+      <div id="slider-container" class="slider-container">
+        <div id="bet-value-display">Bet: $10</div>
+        <label for="bet-slider" class="visually-hidden">Bet Amount</label>
+        <input type="range" id="bet-slider" min="1" max="100" value="10" aria-label="Bet Amount">
+        <button id="confirm-bet-btn" class="action-button">Bet/Raise</button>
+      </div>
+      
+      <!-- Responsible Gaming Settings -->
+      <button id="responsible-gaming-btn" class="responsible-gaming-btn" onclick="showResponsibleGamingSettings()">
+        🛡️ Responsible Gaming
+      </button>
+    </div>
+
+    <!-- Recent Activity Display -->
+    <div id="recent-activity-panel" class="recent-activity-panel">
+      <h4>Recent Activity</h4>
+      <ul id="poker-activity-list">
+        <li>No recent activity</li>
+      </ul>
+    </div>
+
+    <!-- Poker Stats Modal -->
+    <div id="poker-stats-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+      <div style="background:#222; color:#fff; padding:32px 24px; border-radius:16px; min-width:320px; max-width:90vw; margin:auto; position:relative;">
+        <button id="close-poker-stats-modal" style="position:absolute; top:12px; right:12px; background:none; border:none; color:#fff; font-size:1.5em; cursor:pointer;">&times;</button>
+        <h2 style="color:#ffd700; text-align:center; margin-bottom:18px;">Your Poker Stats</h2>
+        <div id="poker-stats-content">
+          <!-- Stats will be injected here -->
+        </div>
+      </div>
+    </div>
+    <!-- Responsible Gaming Settings Modal -->
+    <div id="responsible-gaming-settings-modal" class="responsible-gaming-modal" style="display:none;">
+      <div class="modal-content">
+        <h3>🛡️ Responsible Gaming Settings</h3>
+        <p>Set your personal limits to help maintain healthy gaming habits.</p>
+        
+        <div class="settings-section">
+          <h4>⏰ Session Limits</h4>
+          <div class="setting-item">
+            <label for="session-time-limit">Maximum session time (minutes):</label>
+            <input type="number" id="session-time-limit" min="15" max="180" value="60">
+          </div>
+          <div class="setting-item">
+            <label for="break-reminder">Break reminder interval (minutes):</label>
+            <input type="number" id="break-reminder" min="5" max="60" value="15">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>💰 Loss Limits</h4>
+          <div class="setting-item">
+            <label for="session-loss-limit">Session loss limit (chips):</label>
+            <input type="number" id="session-loss-limit" min="100" max="5000" value="500">
+          </div>
+          <div class="setting-item">
+            <label for="daily-loss-limit">Daily loss limit (chips):</label>
+            <input type="number" id="daily-loss-limit" min="500" max="10000" value="2000">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>🎓 Educational Features</h4>
+          <div class="setting-item">
+            <label for="show-educational-tips">
+              <input type="checkbox" id="show-educational-tips" checked>
+              Show educational tips during gameplay
+            </label>
+          </div>
+          <div class="setting-item">
+            <label for="show-probabilities">
+              <input type="checkbox" id="show-probabilities" checked>
+              Show hand probabilities and odds
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button onclick="saveResponsibleGamingSettings()" class="save-btn">Save Settings</button>
+          <button onclick="closeResponsibleGamingSettings()" class="cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+  
+  <script src="poker_script.js"></script>
+  <script>
+    // --- BLOCK ACCESS IF SESSION ENDED FOR TODAY ---
+    (function() {
+      let userId = null;
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('userId')) {
+        userId = urlParams.get('userId');
+      } else if (urlParams.has('user')) {
+        userId = urlParams.get('user');
+      }
+      if (!userId) userId = 'guest';
+      localStorage.setItem('lastUserId', userId); // Always store for fallback
+      const endedDate = localStorage.getItem(`sessionEnded_${userId}`);
+      const today = new Date().toISOString().split('T')[0];
+      if (endedDate === today) {
+        document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;"><div style="background:#222;color:#ffd700;padding:32px 24px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.25);font-size:1.3em;text-align:center;max-width:400px;">You ended your session for an hour.<br><br>Please come back in an hour to continue playing.<br><br>🛑</div></div>';
+        throw new Error('Session ended for today');
+      }
+      // Also block if guest session ended
+      if (userId !== 'guest') {
+        const guestEnded = localStorage.getItem('sessionEnded_guest');
+        if (guestEnded === today) {
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;"><div style="background:#222;color:#ffd700;padding:32px 24px;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.25);font-size:1.3em;text-align:center;max-width:400px;">Guest session has ended for today.<br><br>Please come back tomorrow.<br><br>🛑</div></div>';
+          throw new Error('Guest session ended for today');
+        }
+      }
+    })();
+
+    // Show game when Start New Game is clicked
+    document.getElementById('start-game-btn').onclick = function(e) {
+      let userId = null;
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('userId')) {
+        userId = urlParams.get('userId');
+      } else if (urlParams.has('user')) {
+        userId = urlParams.get('user');
+      }
+      if (!userId) userId = 'guest';
+      localStorage.setItem('lastUserId', userId);
+      const endedDate = localStorage.getItem(`sessionEnded_${userId}`);
+      const today = new Date().toISOString().split('T')[0];
+      if (endedDate === today) {
+        alert('You ended your session for an hour. Please come back in an hour to continue playing.');
+        e.preventDefault();
+        return false;
+      }
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('game').style.display = '';
+    };
+    // Return to menu button
+    document.getElementById('return-to-menu').onclick = function() {
+      document.getElementById('game').style.display = 'none';
+      document.getElementById('menu-screen').style.display = '';
+    };
+  </script>
+</body>
+</html>
